@@ -1,3 +1,3 @@
-# Advent of Code 2021
+# Advent of Code
 
-Here you may find my [solutions](solutions) to [Advent of Code 2021](https://adventofcode.com/) challenges.
+Here you may find my [solutions](solutions) to [Advent of Code](https://adventofcode.com/) challenges.
