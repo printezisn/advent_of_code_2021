@@ -12,20 +12,22 @@ const checkReflection = (arr, i) => {
   return true;
 };
 
-const findReflectionPoint = (rows, columns) => {
+const findReflectionPoints = (rows, columns) => {
+  const points = [];
+
   for (let i = 0; i < rows.length - 1; i++) {
     if (checkReflection(rows, i)) {
-      return { type: "row", index: i, score: 100 * (i + 1) };
+      points.push({ type: "row", index: i, score: 100 * (i + 1) });
     }
   }
 
   for (let i = 0; i < columns.length - 1; i++) {
     if (checkReflection(columns, i)) {
-      return { type: "column", index: i, score: i + 1 };
+      points.push({ type: "column", index: i, score: i + 1 });
     }
   }
 
-  return null;
+  return points;
 };
 
 const lines = fs
@@ -48,8 +50,11 @@ for (let row = 0; row < lines.length; row++) {
 
   row = limit;
 
-  const initialReflectionPoint = findReflectionPoint(rows, columns);
-  let score = 0;
+  let points = {};
+
+  findReflectionPoints(rows, columns).forEach(p => {
+    points[[p.type, p.index]] = { ...p, initial: true };
+  });
 
   for (let i = 0; i < rows.length; i++) {
     for (let j = 0; j < rows[i].length; j++) {
@@ -57,25 +62,13 @@ for (let row = 0; row < lines.length; row++) {
       const oldRow = rows[i];
 
       rows[i] = rows[i].substring(0, j) + newChar + rows[i].substring(j + 1);
-      const newReflectionPoint = findReflectionPoint(rows, []);
+      findReflectionPoints(rows, []).forEach(p => {
+        if (!points[[p.type, p.index]]) {
+          points[[p.type, p.index]] = p;
+        }
+      });
       rows[i] = oldRow;
-
-      const isNew =
-        newReflectionPoint &&
-        (newReflectionPoint.type !== initialReflectionPoint.type ||
-          newReflectionPoint.index !== initialReflectionPoint.index);
-      if (isNew) {
-        score = newReflectionPoint.score;
-        break;
-      }
     }
-
-    if (score > 0) break;
-  }
-
-  if (score > 0) {
-    total += score;
-    continue;
   }
 
   for (let i = 0; i < columns.length; i++) {
@@ -85,25 +78,16 @@ for (let row = 0; row < lines.length; row++) {
 
       columns[i] =
         columns[i].substring(0, j) + newChar + columns[i].substring(j + 1);
-      const newReflectionPoint = findReflectionPoint([], columns);
+      findReflectionPoints([], columns).forEach(p => {
+        if (!points[[p.type, p.index]]) {
+          points[[p.type, p.index]] = p;
+        }
+      });
       columns[i] = oldColumn;
-
-      const isNew =
-        newReflectionPoint &&
-        (newReflectionPoint.type !== initialReflectionPoint.type ||
-          newReflectionPoint.index !== initialReflectionPoint.index);
-      if (isNew) {
-        if (score > 0 && newReflectionPoint.score !== score)
-          console.log("koko");
-        score = newReflectionPoint.score;
-        break;
-      }
     }
-
-    if (score > 0) break;
   }
 
-  total += score;
+  total += Object.values(points).find(({ initial }) => !initial).score;
 }
 
 console.log(total);
