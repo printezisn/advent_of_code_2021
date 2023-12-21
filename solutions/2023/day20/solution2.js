@@ -5,6 +5,7 @@ class Mod {
     this.name = name;
     this.inputs = {};
     this.status = false;
+    this.firstTimeTrue = 0;
     this.hasAcknowledgesConnection = false;
     this.destinations = destinations;
   }
@@ -74,27 +75,37 @@ const createMod = (mod, destinations) => {
   return null;
 };
 
-const pressButton = (mods, button) => {
+const pressButton = (i, mods, button) => {
   const pulses = button.receivePulse(false);
 
   while (pulses.length > 0) {
     const [input, mod, pulse] = pulses.shift();
-    if (mod === "rx" && !pulse) return true;
+    if (pulse && mods[input].firstTimeTrue === 0) {
+      mods[input].firstTimeTrue = i + 1;
+    }
 
     mods[mod]?.receivePulse(pulse, input)?.forEach((newPulse) => {
       pulses.push(newPulse);
     });
   }
-
-  return false;
 };
+
+const gcd = (a, b) => {
+  if (b === 0) return a;
+
+  return gcd(b, a % b);
+}
+
+const lcm = (a, b) => {
+  return (a * b) / gcd(a, b);
+}
 
 const runSimulation = (mods) => {
   const button = new ButtonMod();
   button.acknowledgeConnection(mods);
 
-  for (let i = 0; ; i++) {
-    if (pressButton(mods, button)) return i;
+  for (let i = 0; i < 1000000; i++) {
+    pressButton(i, mods, button);
   }
 };
 
@@ -109,4 +120,11 @@ lines.forEach((line) => {
   mods[modObj.name] = modObj;
 });
 
-console.log(runSimulation(mods));
+runSimulation(mods);
+
+let result = 1;
+['fz', 'xf', 'hn', 'mp'].forEach(m => {
+  result = lcm(result, mods[m].firstTimeTrue);
+})
+
+console.log(result);
