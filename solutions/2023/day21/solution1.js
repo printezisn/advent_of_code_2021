@@ -1,19 +1,19 @@
-const fs = require('fs');
+const fs = require("fs");
 
 let startPos;
 
 const map = fs
-  .readFileSync('input.txt')
+  .readFileSync("input.txt")
   .toString()
-  .split('\n')
+  .split("\n")
   .map((line, i) => {
     const row = [];
     const trimmedLine = line.trim();
 
     for (let j = 0; j < trimmedLine.length; j++) {
-      if (trimmedLine[j] === 'S') {
-        startPos = [64, i, j];
-        row.push('.');
+      if (trimmedLine[j] === "S") {
+        startPos = [i, j];
+        row.push(".");
       } else {
         row.push(trimmedLine[j]);
       }
@@ -22,32 +22,36 @@ const map = fs
     return row;
   });
 
-const nodesToVisit = [startPos];
-const visitedNodes = {};
-const endingNodes = {};
+let nodesToVisit = [startPos];
 
-while (nodesToVisit.length > 0) {
-  const node = nodesToVisit.shift();
-  const [step, row, col] = node;
+for (let i = 0; i < 64; i++) {
+  const newNodes = {};
 
-  if (visitedNodes[[row, col]] != null && visitedNodes[[row, col]] <= step) {
-    continue;
+  while (nodesToVisit.length > 0) {
+    const node = nodesToVisit.shift();
+    const [row, col] = node;
+
+    [
+      [row - 1, col],
+      [row + 1, col],
+      [row, col - 1],
+      [row, col + 1],
+    ].forEach(([newRow, newCol]) => {
+      if (
+        newRow < 0 ||
+        newRow >= map.length ||
+        newCol < 0 ||
+        newCol >= map[newRow].length
+      ) {
+        return;
+      }
+      if (map[newRow][newCol] === "#") return;
+
+      newNodes[[newRow, newCol]] = [newRow, newCol];
+    });
   }
 
-  visitedNodes[[row, col]] = step;
-  if (step === 0) {
-    endingNodes[[row, col]] = true;
-    continue;
-  }
-
-  [[row - 1 , col], [row + 1, col], [row, col - 1], [row, col + 1]].forEach(([newRow, newCol]) => {
-    if (newRow < 0 || newRow >= map.length || newCol < 0 || newCol >= map[newRow].length) {
-      return;
-    }
-    if (map[newRow][newCol] === '#') return;
-
-    nodesToVisit.push([step - 1, newRow, newCol]);
-  });
+  nodesToVisit = Object.values(newNodes);
 }
 
-console.log(Object.keys(endingNodes).length);
+console.log(nodesToVisit.length);
