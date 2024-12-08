@@ -10,8 +10,8 @@ const dirs = [
 let dirIndex = 0;
 const obstacles = new Set();
 const lines = fs.readFileSync("./input.txt").toString().split("\n");
-const maxRow = lines.length - 1;
-const maxCol = lines[0].length - 1;
+const maxRow = lines.length;
+const maxCol = lines[0].length;
 const uniquePositions = new Set();
 
 lines.forEach((line, row) => {
@@ -28,9 +28,9 @@ while (true) {
   const newPos = [guard[0] + dir[0], guard[1] + dir[1]];
   if (
     newPos[0] < 0 ||
-    newPos[0] > maxRow ||
+    newPos[0] >= maxRow ||
     newPos[1] < 0 ||
-    newPos[1] > maxCol
+    newPos[1] >= maxCol
   ) {
     break;
   }
